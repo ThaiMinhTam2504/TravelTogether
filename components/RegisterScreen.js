@@ -65,6 +65,7 @@
 
 import React, { useState } from "react";
 import { View, TextInput, Button, Alert } from 'react-native';
+import { SERVER_URL, HELLO } from '@env';
 
 const RegisterScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
@@ -72,13 +73,14 @@ const RegisterScreen = ({ navigation }) => {
 
     const register = async () => {
         try {
-            const response = await fetch('http://192.168.1.7:3000/register', {
+            const response = await fetch(`${SERVER_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ username, password })
             });
+            console.log('chạy api register OK');
 
             if (!response.ok) {
                 console.log('1');
@@ -98,6 +100,8 @@ const RegisterScreen = ({ navigation }) => {
             navigation.navigate('Login');
         } catch (error) {
             console.log('3');
+            console.log(`${SERVER_URL}/register`);
+            console.log(HELLO);
             Alert.alert('Error', error.message);
         }
     };

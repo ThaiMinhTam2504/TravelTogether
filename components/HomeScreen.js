@@ -245,7 +245,7 @@
 //             }
 
 //             try {
-//                 console.log('2')
+//                  2')
 //                 let location = await Location.getCurrentPositionAsync({});
 //                 console.log('2.1')
 //                 setLocation(location);
@@ -343,56 +343,483 @@
 
 
 
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+// import MapView, { Marker } from 'react-native-maps';
+// import * as Location from 'expo-location';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// const HomeScreen = () => {
+//     const [location, setLocation] = useState(null);
+//     const [errorMsg, setErrorMsg] = useState(null);
+//     const [userInfo, setUserInfo] = useState({ username: '', friends: [] });
+
+//     useEffect(() => {
+//         (async () => {
+//             let { status } = await Location.requestForegroundPermissionsAsync();
+//             if (status !== 'granted') {
+//                 setErrorMsg('Permission to access location was denied');
+//                 Alert.alert('Error', 'Permission to access location was denied');
+//                 return;
+//             }
+
+//             try {
+//                 let location = await Location.getCurrentPositionAsync({});
+//                 setLocation(location);
+//             } catch (error) {
+//                 setErrorMsg(error.message);
+//                 Alert.alert('Error', error.message);
+//             }
+//         })();
+
+//         (async () => {
+//             try {
+//                 const token = await AsyncStorage.getItem('token');
+//                 if (!token) {
+//                     Alert.alert('Error', 'No token found');
+//                     return;
+//                 }
+
+//                 const response = await fetch(`http://172.23.247.78:3000/user-info?token=${token}`);
+//                 if (!response.ok) {
+//                     const errorData = await response.json();
+//                     throw new Error(errorData.message || 'Failed to fetch user info');
+//                 }
+
+//                 const data = await response;
+//                 console.log('User Info:', data); // Log dữ liệu nhận được từ API
+//                 setUserInfo(data);
+//             } catch (error) {
+//                 Alert.alert('Error', error.message);
+//             }
+//         })();
+//     }, []);
+
+//     return (
+//         <View style={styles.container}>
+//             <View style={styles.userInfo}>
+//                 <Text style={styles.userInfoText}>User: {userInfo.username}</Text>
+//                 <Text style={styles.userInfoText}>Friends:</Text>
+//                 {userInfo.friends.map((friend, index) => (
+//                     <Text key={index} style={styles.userInfoText}>- {friend.username}</Text>
+//                 ))}
+//                 <Button title="Send Friend Request" onPress={() => Alert.alert('Friend request sent')} />
+//             </View>
+//             <MapView
+//                 style={styles.map}
+//                 initialRegion={{
+//                     latitude: location ? location.coords.latitude : 37.78825,
+//                     longitude: location ? location.coords.longitude : -122.4324,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 }}
+//                 region={location ? {
+//                     latitude: location.coords.latitude,
+//                     longitude: location.coords.longitude,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 } : undefined}
+//                 showsUserLocation={true}
+//             >
+//                 {location && (
+//                     <Marker
+//                         coordinate={{
+//                             latitude: location.coords.latitude,
+//                             longitude: location.coords.longitude,
+//                         }}
+//                         title="You are here"
+//                     />
+//                 )}
+//             </MapView>
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     userInfo: {
+//         flex: 0.3,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         padding: 20,
+//     },
+//     userInfoText: {
+//         fontSize: 18,
+//         marginBottom: 10,
+//     },
+//     map: {
+//         flex: 1,
+//         position: 'absolute',
+//         bottom: 0,
+//         width: '100%',
+//         height: '50%',
+//     },
+// });
+
+// export default HomeScreen;
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+// import MapView, { Marker } from 'react-native-maps';
+// import * as Location from 'expo-location';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { SERVER_URL } from '@env';
+
+// const HomeScreen = () => {
+//     const [location, setLocation] = useState(null);
+//     const [errorMsg, setErrorMsg] = useState(null);
+//     const [userInfo, setUserInfo] = useState({ username: '', friends: [] });
+
+//     useEffect(() => {
+//         (async () => {
+//             let { status } = await Location.requestForegroundPermissionsAsync();
+//             if (status !== 'granted') {
+//                 setErrorMsg('Permission to access location was denied');
+//                 Alert.alert('Error', 'Permission to access location was denied');
+//                 return;
+//             }
+
+//             try {
+//                 let location = await Location.getCurrentPositionAsync({});
+//                 setLocation(location);
+//             } catch (error) {
+//                 setErrorMsg(error.message);
+//                 Alert.alert('Error', error.message);
+//             }
+//         })();
+
+//         (async () => {
+//             try {
+//                 const token = await AsyncStorage.getItem('token');
+//                 if (!token) {
+//                     Alert.alert('Error', 'No token found');
+//                     return;
+//                 }
+//                 const response = await fetch(`${SERVER_URL}/user-info?token=${token}`);
+//                 if (!response.ok) {
+//                     const errorData = await response.json();
+//                     throw new Error(errorData.message || 'Failed to fetch user info');
+//                 }
+
+//                 const data = await response.json();
+//                 console.log('User Info:', data); // Log dữ liệu nhận được từ API
+//                 setUserInfo(data);
+//             } catch (error) {
+//                 Alert.alert('Error', error.message);
+//             }
+//         })();
+//     }, []);
+
+//     return (
+//         <View style={styles.container}>
+//             <View style={styles.userInfo}>
+//                 <Text style={styles.userInfoText}>User: {userInfo.username}</Text>
+//                 <Text style={styles.userInfoText}>Friends:</Text>
+//                 {userInfo.friends && userInfo.friends.length > 0 ? (
+//                     userInfo.friends.map((friend, index) => (
+//                         <Text key={index} style={styles.userInfoText}>- {friend.username}</Text>
+//                     ))
+//                 ) : (
+//                     <Text style={styles.userInfoText}>No friends found</Text>
+//                 )}
+//                 <Button title="Send Friend Request" onPress={() => Alert.alert('Friend request sent')} />
+//             </View>
+//             <MapView
+//                 style={styles.map}
+//                 initialRegion={{
+//                     latitude: location ? location.coords.latitude : 37.78825,
+//                     longitude: location ? location.coords.longitude : -122.4324,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 }}
+//                 region={location ? {
+//                     latitude: location.coords.latitude,
+//                     longitude: location.coords.longitude,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 } : undefined}
+//                 showsUserLocation={true}
+//             >
+//                 {location && (
+//                     <Marker
+//                         coordinate={{
+//                             latitude: location.coords.latitude,
+//                             longitude: location.coords.longitude,
+//                         }}
+//                         title="You are here"
+//                     />
+//                 )}
+//             </MapView>
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     userInfo: {
+//         flex: 0.3,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         padding: 20,
+//     },
+//     userInfoText: {
+//         fontSize: 18,
+//         marginBottom: 10,
+//     },
+//     map: {
+//         flex: 1,
+//         position: 'absolute',
+//         bottom: 0,
+//         width: '100%',
+//         height: '50%',
+//     },
+// });
+
+// export default HomeScreen;
+
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+// import MapView, { Marker } from 'react-native-maps';
+// import * as Location from 'expo-location';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { SERVER_URL, HELLO } from '@env';
+
+// const HomeScreen = () => {
+//     const [location, setLocation] = useState(null);
+//     const [errorMsg, setErrorMsg] = useState(null);
+//     const [userInfo, setUserInfo] = useState({ username: '', friends: [] });
+
+//     useEffect(() => {
+//         const getLocationAndUpdateServer = async () => {
+//             let { status } = await Location.requestForegroundPermissionsAsync();
+//             if (status !== 'granted') {
+//                 setErrorMsg('Permission to access location was denied');
+//                 Alert.alert('Error', 'Permission to access location was denied');
+//                 return;
+//             }
+
+//             try {
+//                 let location = await Location.getCurrentPositionAsync({});
+//                 setLocation(location);
+
+//                 const token = await AsyncStorage.getItem('token');
+//                 if (!token) {
+//                     Alert.alert('Error', 'No token found');
+//                     return;
+//                 }
+
+//                 await fetch(`${SERVER_URL}/location`, {
+//                     method: 'POST',
+//                     headers: { 'Content-Type': 'application/json' },
+//                     body: JSON.stringify({ token, lat: location.coords.latitude, lng: location.coords.longitude })
+//                 });
+//             } catch (error) {
+//                 setErrorMsg(error.message);
+//                 Alert.alert('Error', error.message);
+//             }
+//         };
+
+//         const intervalId = setInterval(getLocationAndUpdateServer, 5000); // Cập nhật vị trí mỗi 5 giây
+
+//         return () => clearInterval(intervalId); // Clear interval khi component unmount
+//     }, []);
+
+//     useEffect(() => {
+//         const fetchUserInfo = async () => {
+//             try {
+//                 const token = await AsyncStorage.getItem('token');
+//                 if (!token) {
+//                     Alert.alert('Error', 'No token found');
+//                     return;
+//                 }
+
+//                 const response = await fetch(`${SERVER_URL}/user-info?token=${token}`);
+//                 if (!response.ok) {
+//                     const errorData = await response.json();
+//                     throw new Error(errorData.message || 'Failed to fetch user info');
+//                 }
+
+//                 const data = await response.json();
+//                 setUserInfo(data);
+//             } catch (error) {
+//                 Alert.alert('Error', error.message);
+//             }
+//         };
+
+//         fetchUserInfo();
+//     }, []);
+
+//     return (
+//         <View style={styles.container}>
+//             <View style={styles.userInfo}>
+//                 <Text style={styles.userInfoText}>User: {userInfo.username}</Text>
+//                 <Text style={styles.userInfoText}>Friends:</Text>
+//                 {userInfo.friends && userInfo.friends.length > 0 ? (
+//                     userInfo.friends.map((friend, index) => (
+//                         <Text key={index} style={styles.userInfoText}>- {friend.username}</Text>
+//                     ))
+//                 ) : (
+//                     <Text style={styles.userInfoText}>No friends found</Text>
+//                 )}
+//                 <Button title="Send Friend Request" onPress={() => Alert.alert('Friend request sent')} />
+//             </View>
+//             <MapView
+//                 style={styles.map}
+//                 initialRegion={{
+//                     latitude: location ? location.coords.latitude : 37.78825,  ///37.78825
+//                     longitude: location ? location.coords.longitude : -122.4324,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 }}
+//                 region={location ? {
+//                     latitude: location.coords.latitude,
+//                     longitude: location.coords.longitude,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 } : undefined}
+//                 showsUserLocation={true}
+//             >
+//                 {location && (
+//                     <Marker
+//                         coordinate={{
+//                             latitude: location.coords.latitude,
+//                             longitude: location.coords.longitude,
+//                         }}
+//                         title="You are here"
+//                     />
+//                 )}
+//             </MapView>
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     userInfo: {
+//         flex: 0.3,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         padding: 20,
+//     },
+//     userInfoText: {
+//         fontSize: 18,
+//         marginBottom: 10,
+//     },
+//     map: {
+//         flex: 1,
+//         position: 'absolute',
+//         bottom: 0,
+//         width: '100%',
+//         height: '50%',
+//     },
+// });
+
+// export default HomeScreen;
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Button } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SERVER_URL } from '@env';
 
 const HomeScreen = () => {
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
     const [userInfo, setUserInfo] = useState({ username: '', friends: [] });
 
+    // useEffect(() => {
+    //     const getLocationAndUpdateServer = async () => {
+    //         let { status } = await Location.requestForegroundPermissionsAsync();
+    //         // console.log(Location)
+    //         if (status !== 'granted') {
+    //             setErrorMsg('Permission to access location was denied');
+    //             Alert.alert('Error', 'Permission to access location was denied');
+    //             return;
+    //         }
+
+    //         try {
+    //             let location = await Location.getCurrentPositionAsync({});
+    //             setLocation(location);
+
+    //             const token = await AsyncStorage.getItem('token');
+    //             if (!token) {
+    //                 Alert.alert('Error', 'No token found');
+    //                 return;
+    //             }
+
+    //             await fetch(`${SERVER_URL}/location`, {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({ token, lat: location.coords.latitude, lng: location.coords.longitude })
+    //             });
+    //             console.log('api location OK')
+
+    //             // console.log('Location:', location); // Log vị trí hiện tại
+    //         } catch (error) {
+    //             setErrorMsg(error.message);
+    //             Alert.alert('Error', error.message);
+    //         }
+    //     };
+
+    //     const intervalId = setInterval(getLocationAndUpdateServer, 5000); // Cập nhật vị trí mỗi 5 giây
+
+    //     return () => clearInterval(intervalId); // Clear interval khi component unmount
+    // }, []);
+
     useEffect(() => {
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                setErrorMsg('Permission to access location was denied');
-                Alert.alert('Error', 'Permission to access location was denied');
-                return;
-            }
-
-            try {
-                let location = await Location.getCurrentPositionAsync({});
-                setLocation(location);
-            } catch (error) {
-                setErrorMsg(error.message);
-                Alert.alert('Error', error.message);
-            }
-        })();
-
-        (async () => {
+        const fetchUserInfo = async () => {
             try {
                 const token = await AsyncStorage.getItem('token');
+                console.log('lấy được token rồi token là:', token)
                 if (!token) {
                     Alert.alert('Error', 'No token found');
                     return;
                 }
 
-                const response = await fetch(`http://192.168.1.7:3000/user-info?token=${token}`);
+                const response = await fetch(`${SERVER_URL}/user-info?token=${token}`);
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to fetch user info');
                 }
+                console.log(response)
 
-                const data = await response;
-                console.log('User Info:', data); // Log dữ liệu nhận được từ API
+                const data = await response.json();
+                console.log(data)
                 setUserInfo(data);
+                if (data.location) {
+                    setLocation({
+                        coords: {
+                            latitude: data.location.lat,
+                            longitude: data.location.lng
+                        }
+                    });
+                }
             } catch (error) {
                 Alert.alert('Error', error.message);
             }
-        })();
+        };
+
+        fetchUserInfo();
     }, []);
 
     return (
@@ -400,9 +827,13 @@ const HomeScreen = () => {
             <View style={styles.userInfo}>
                 <Text style={styles.userInfoText}>User: {userInfo.username}</Text>
                 <Text style={styles.userInfoText}>Friends:</Text>
-                {userInfo.friends.map((friend, index) => (
-                    <Text key={index} style={styles.userInfoText}>- {friend.username}</Text>
-                ))}
+                {userInfo.friends && userInfo.friends.length > 0 ? (
+                    userInfo.friends.map((friend, index) => (
+                        <Text key={index} style={styles.userInfoText}>- {friend.username}</Text>
+                    ))
+                ) : (
+                    <Text style={styles.userInfoText}>No friends found</Text>
+                )}
                 <Button title="Send Friend Request" onPress={() => Alert.alert('Friend request sent')} />
             </View>
             <MapView
