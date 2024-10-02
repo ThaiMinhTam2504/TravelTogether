@@ -2839,6 +2839,348 @@
 
 
 
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, StyleSheet, Alert, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
+// import MapView, { Marker } from 'react-native-maps';
+// import * as Location from 'expo-location';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { SERVER_URL } from '@env';
+
+// const HomeScreen = () => {
+//     const [location, setLocation] = useState(null);
+//     const [errorMsg, setErrorMsg] = useState(null);
+//     const [userInfo, setUserInfo] = useState({ username: '', friends: [], friendRequests: [] });
+//     const [selectedFriend, setSelectedFriend] = useState(null);
+//     const [friendUsername, setFriendUsername] = useState('');
+//     const [friendEmail, setFriendEmail] = useState('');
+//     const [modalVisible, setModalVisible] = useState(false);
+
+//     useEffect(() => {
+//         const initialize = async () => {
+//             try {
+//                 // Lấy token từ AsyncStorage
+//                 const token = await AsyncStorage.getItem('token');
+//                 if (!token) {
+//                     Alert.alert('Error', 'No token found');
+//                     return;
+//                 }
+
+//                 // Yêu cầu quyền truy cập vị trí
+//                 let { status } = await Location.requestForegroundPermissionsAsync();
+//                 if (status !== 'granted') {
+//                     setErrorMsg('Permission to access location was denied');
+//                     Alert.alert('Error', 'Permission to access location was denied');
+//                     return;
+//                 }
+
+//                 // Lấy vị trí hiện tại
+//                 let location = await Location.getCurrentPositionAsync({});
+//                 setLocation(location);
+
+//                 // Cập nhật vị trí lên máy chủ
+//                 await fetch(`${SERVER_URL}/location`, {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                         'Authorization': `Bearer ${token}`
+//                     },
+//                     body: JSON.stringify({ lat: location.coords.latitude, lng: location.coords.longitude })
+//                 });
+
+//                 // Lấy thông tin người dùng từ máy chủ
+//                 const response = await fetch(`${SERVER_URL}/user-info?token=${token}`);
+//                 if (!response.ok) {
+//                     const errorData = await response.json();
+//                     throw new Error(errorData.message || 'Failed to fetch user info');
+//                 }
+//                 const data = await response.json();
+//                 setUserInfo(data);
+
+//                 // Cập nhật vị trí nếu có
+//                 if (data.location) {
+//                     setLocation({
+//                         coords: {
+//                             latitude: data.location.lat,
+//                             longitude: data.location.lng
+//                         }
+//                     });
+//                 }
+
+//                 // Thiết lập interval để cập nhật vị trí mỗi 5 phút
+//                 const intervalId = setInterval(async () => {
+//                     let location = await Location.getCurrentPositionAsync({});
+//                     setLocation(location);
+//                     await fetch(`${SERVER_URL}/location`, {
+//                         method: 'POST',
+//                         headers: {
+//                             'Content-Type': 'application/json',
+//                             'Authorization': `Bearer ${token}`
+//                         },
+//                         body: JSON.stringify({ lat: location.coords.latitude, lng: location.coords.longitude })
+//                     });
+//                 }, 300000); // 5 phút
+
+//                 return () => clearInterval(intervalId); // Clear interval khi component unmount
+//             } catch (error) {
+//                 setErrorMsg(error.message);
+//                 Alert.alert('Error', error.message);
+//             }
+//         };
+
+//         initialize();
+//     }, []);
+
+//     const toggleShareLocation = async () => {
+//         try {
+//             const token = await AsyncStorage.getItem('token');
+//             const response = await fetch(`${SERVER_URL}/toggle-share-location`, {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ token, shareLocation: !userInfo.shareLocation })
+//             });
+//             const data = await response.json();
+//             setUserInfo({ ...userInfo, shareLocation: !userInfo.shareLocation });
+//             Alert.alert('Success', data.message);
+//         } catch (error) {
+//             Alert.alert('Error', error.message);
+//         }
+//     };
+
+//     const sendFriendRequest = async () => {
+//         try {
+//             const token = await AsyncStorage.getItem('token');
+//             const response = await fetch(`${SERVER_URL}/send-friend-request`, {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ token, friendUsername, friendEmail })
+//             });
+//             const data = await response.json();
+//             Alert.alert('Success', data.message);
+//             setModalVisible(false);
+//         } catch (error) {
+//             Alert.alert('Error', error.message);
+//         }
+//     };
+
+//     const acceptFriendRequest = async (friendId) => {
+//         try {
+//             const token = await AsyncStorage.getItem('token');
+//             const response = await fetch(`${SERVER_URL}/accept-friend-request`, {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ token, friendId })
+//             });
+//             const data = await response.json();
+//             Alert.alert('Success', data.message);
+//             setUserInfo({ ...userInfo, friendRequests: userInfo.friendRequests.filter(id => id !== friendId) });
+//         } catch (error) {
+//             Alert.alert('Error', error.message);
+//         }
+//     };
+
+//     const rejectFriendRequest = async (friendId) => {
+//         try {
+//             const token = await AsyncStorage.getItem('token');
+//             const response = await fetch(`${SERVER_URL}/reject-friend-request`, {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ token, friendId })
+//             });
+//             const data = await response.json();
+//             Alert.alert('Success', data.message);
+//             setUserInfo({ ...userInfo, friendRequests: userInfo.friendRequests.filter(id => id !== friendId) });
+//         } catch (error) {
+//             Alert.alert('Error', error.message);
+//         }
+//     };
+
+//     const calculateDistance = (lat1, lon1, lat2, lon2) => {
+//         const R = 6371; // Radius of the Earth in km
+//         const dLat = (lat2 - lat1) * Math.PI / 180;
+//         const dLon = (lon2 - lon1) * Math.PI / 180;
+//         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//             Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+//             Math.sin(dLon / 2) * Math.sin(dLon / 2);
+//         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//         const distance = R * c; // Distance in km
+//         return distance;
+//     };
+
+//     if (!location) {
+//         return (
+//             <View style={styles.loadingContainer}>
+//                 <ActivityIndicator size="large" color="#0000ff" />
+//                 <Text>Loading...</Text>
+//             </View>
+//         );
+//     }
+
+//     return (
+//         <View style={styles.container}>
+//             <View style={styles.userInfo}>
+//                 <Text style={styles.userInfoText}>User: {userInfo.username}</Text>
+//                 <Text style={styles.userInfoText}>Friends:</Text>
+//                 {userInfo.friends && userInfo.friends.length > 0 ? (
+//                     userInfo.friends.map((friend, index) => (
+//                         <Text key={index} style={styles.userInfoText} onPress={() => setSelectedFriend(friend)}>
+//                             - {friend.username}
+//                         </Text>
+//                     ))
+//                 ) : (
+//                     <Text style={styles.userInfoText}>No friends found</Text>
+//                 )}
+//                 <Button title="Toggle Share Location" onPress={toggleShareLocation} />
+//                 <Button title="Kết bạn" onPress={() => setModalVisible(true)} />
+//                 {selectedFriend && selectedFriend.location && (
+//                     <Text style={styles.userInfoText}>
+//                         Distance to {selectedFriend.username}: {calculateDistance(location.coords.latitude, location.coords.longitude, selectedFriend.location.lat, selectedFriend.location.lng).toFixed(2)} km
+//                     </Text>
+//                 )}
+//                 <Text style={styles.userInfoText}>Friend Requests:</Text>
+//                 {userInfo.friendRequests && userInfo.friendRequests.length > 0 ? (
+//                     userInfo.friendRequests.map((request, index) => (
+//                         <View key={index} style={styles.friendRequest}>
+//                             <Text style={styles.userInfoText}>{request.username}</Text>
+//                             <Button title="Accept" onPress={() => acceptFriendRequest(request._id)} />
+//                             <Button title="Reject" onPress={() => rejectFriendRequest(request._id)} />
+//                         </View>
+//                     ))
+//                 ) : (
+//                     <Text style={styles.userInfoText}>No friend requests</Text>
+//                 )}
+//             </View>
+//             <MapView
+//                 style={styles.map}
+//                 initialRegion={{
+//                     latitude: location.coords.latitude,
+//                     longitude: location.coords.longitude,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 }}
+//                 region={{
+//                     latitude: location.coords.latitude,
+//                     longitude: location.coords.longitude,
+//                     latitudeDelta: 0.0922,
+//                     longitudeDelta: 0.0421,
+//                 }}
+//                 showsUserLocation={true}
+//             >
+//                 <Marker
+//                     coordinate={{
+//                         latitude: location.coords.latitude,
+//                         longitude: location.coords.longitude,
+//                     }}
+//                     title="You are here"
+//                 />
+//                 {selectedFriend && selectedFriend.location && selectedFriend.location.lat && selectedFriend.location.lng && (
+//                     <Marker
+//                         coordinate={{
+//                             latitude: selectedFriend.location.lat,
+//                             longitude: selectedFriend.location.lng,
+//                         }}
+//                         title={`${selectedFriend.username} is here`}
+//                     />
+//                 )}
+//             </MapView>
+//             <Modal
+//                 animationType="slide"
+//                 transparent={true}
+//                 visible={modalVisible}
+//                 onRequestClose={() => {
+//                     setModalVisible(!modalVisible);
+//                 }}
+//             >
+//                 <View style={styles.modalView}>
+//                     <Text style={styles.modalText}>Nhập tên và email người bạn muốn kết bạn:</Text>
+//                     <TextInput
+//                         style={styles.input}
+//                         placeholder="Tên người bạn"
+//                         value={friendUsername}
+//                         onChangeText={setFriendUsername}
+//                     />
+//                     <TextInput
+//                         style={styles.input}
+//                         placeholder="Email người bạn"
+//                         value={friendEmail}
+//                         onChangeText={setFriendEmail}
+//                     />
+//                     <Button title="Gửi yêu cầu kết bạn" onPress={sendFriendRequest} />
+//                     <Button title="Hủy" onPress={() => setModalVisible(false)} />
+//                 </View>
+//             </Modal>
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     userInfo: {
+//         flex: 0.3,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         padding: 20,
+//     },
+//     userInfoText: {
+//         fontSize: 18,
+//         marginBottom: 10,
+//     },
+//     friendRequest: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         justifyContent: 'space-between',
+//         width: '80%',
+//         marginBottom: 10,
+//     },
+//     map: {
+//         flex: 1,
+//         position: 'absolute',
+//         bottom: 0,
+//         width: '100%',
+//         height: '50%',
+//     },
+//     modalView: {
+//         margin: 20,
+//         backgroundColor: 'white',
+//         borderRadius: 20,
+//         padding: 35,
+//         alignItems: 'center',
+//         shadowColor: '#000',
+//         shadowOffset: {
+//             width: 0,
+//             height: 2,
+//         },
+//         shadowOpacity: 0.25,
+//         shadowRadius: 4,
+//         elevation: 5,
+//     },
+//     modalText: {
+//         marginBottom: 15,
+//         textAlign: 'center',
+//     },
+//     input: {
+//         height: 40,
+//         borderColor: 'gray',
+//         borderWidth: 1,
+//         marginBottom: 20,
+//         paddingLeft: 10,
+//         width: '80%',
+//     },
+//     loadingContainer: {
+//         flex: 1,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//     },
+// });
+
+// export default HomeScreen;
+
+
+
+// cập nhật vị trí realtime của User
+
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Button, TextInput, Modal, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
@@ -2906,21 +3248,29 @@ const HomeScreen = () => {
                     });
                 }
 
-                // Thiết lập interval để cập nhật vị trí mỗi 5 phút
-                const intervalId = setInterval(async () => {
-                    let location = await Location.getCurrentPositionAsync({});
-                    setLocation(location);
-                    await fetch(`${SERVER_URL}/location`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ lat: location.coords.latitude, lng: location.coords.longitude })
-                    });
-                }, 300000); // 5 phút
+                // Theo dõi vị trí theo thời gian thực
+                const locationSubscription = await Location.watchPositionAsync(
+                    {
+                        accuracy: Location.Accuracy.High,
+                        timeInterval: 1000, // Cập nhật mỗi giây
+                        distanceInterval: 1, // Cập nhật khi di chuyển ít nhất 1 mét
+                    },
+                    async (newLocation) => {
+                        setLocation(newLocation);
+                        await fetch(`${SERVER_URL}/location`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ lat: newLocation.coords.latitude, lng: newLocation.coords.longitude })
+                        });
+                    }
+                );
 
-                return () => clearInterval(intervalId); // Clear interval khi component unmount
+                return () => {
+                    locationSubscription.remove(); // Hủy theo dõi vị trí khi component unmount
+                };
             } catch (error) {
                 setErrorMsg(error.message);
                 Alert.alert('Error', error.message);
