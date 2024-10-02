@@ -308,13 +308,13 @@ const jwt = require('jsonwebtoken');
 const app = express();
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/traveltogether', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // useCreateIndex: true,
-});
+// mongoose.connect('mongodb://localhost:27017/traveltogether', {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//     // useCreateIndex: true,
+// });
 
-// mongoose.connect('mongodb://localhost:27017/traveltogether');
+mongoose.connect('mongodb://localhost:27017/traveltogether');
 
 const userSchema = new mongoose.Schema({
     name: String,
@@ -475,10 +475,10 @@ app.get('/user-info', async (req, res) => {
             return res.status(401).json({ message: 'Token is required' });
         }
 
-        const decoded = jwt.verify(token, 'your_jwt_secret');
-        // console.log('SERVER.js DECODED:', decoded);
+        const decoded = jwt.verify(token, 'secret');
+        console.log('SERVER.js DECODED:', decoded);
         const userInfo = await User.findById(decoded.userId).populate('friends');
-        // console.log('SERVER.js USER INFO:', userInfo);
+        console.log('SERVER.js USER INFO:', userInfo);
 
         if (!userInfo) {
             return res.status(404).json({ message: 'User not found' });
@@ -492,7 +492,7 @@ app.get('/user-info', async (req, res) => {
             location: userInfo.location,
             friends: userInfo.friends.map(friend => ({ username: friend.username, location: friend.location }))
         };
-        // console.log('SERVER.js RESPONSE:', response);
+        console.log('SERVER.js RESPONSE:', response);
         res.json(response);
     } catch (error) {
         console.log('SERVER.js ERROR:', error);
@@ -504,7 +504,7 @@ app.get('/user-info', async (req, res) => {
 
 app.post('/send-friend-request', async (req, res) => {
     const { token, friendUsername, friendEmail } = req.body;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     const friend = await User.findOne({ username: friendUsername, email: friendEmail });
 
     if (!friend) {
@@ -522,7 +522,7 @@ app.post('/send-friend-request', async (req, res) => {
 
 app.post('/accept-friend-request', async (req, res) => {
     const { token, friendId } = req.body;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     const currentUser = await User.findById(user);
 
     if (!currentUser.friendRequests.includes(friendId)) {
@@ -542,7 +542,7 @@ app.post('/accept-friend-request', async (req, res) => {
 
 app.get('/friends', async (req, res) => {
     const { token } = req.query;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     const userInfo = await User.findById(user).populate('friends');
     res.json(userInfo.friends.map(friend => ({
         username: friend.username,
@@ -552,7 +552,7 @@ app.get('/friends', async (req, res) => {
 
 app.post('/toggle-share-location', async (req, res) => {
     const { token, shareLocation } = req.body;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     await User.findByIdAndUpdate(user, { shareLocation });
     res.json({ message: 'Share location status updated' });
 });
@@ -560,7 +560,7 @@ app.post('/toggle-share-location', async (req, res) => {
 // API để lấy danh sách các lời mời kết bạn
 app.get('/friend-requests', async (req, res) => {
     const { token } = req.query;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     const userInfo = await User.findById(user).populate('friendRequests');
     res.json(userInfo.friendRequests.map(request => ({
         id: request._id,
@@ -573,7 +573,7 @@ app.get('/friend-requests', async (req, res) => {
 // API để từ chối lời mời kết bạn
 app.post('/reject-friend-request', async (req, res) => {
     const { token, friendId } = req.body;
-    const { user } = jwt.verify(token, 'your_jwt_secret');
+    const { user } = jwt.verify(token, 'secret');
     const currentUser = await User.findById(user);
 
     if (!currentUser.friendRequests.includes(friendId)) {

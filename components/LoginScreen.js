@@ -159,11 +159,13 @@ const LoginScreen = ({ navigation }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
+            console.log(response);
             console.log('chạy api login OK');
 
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Login failed');
+                console.log(errorData)
             }
             const data = await response.json();
             console.log(data.token)
